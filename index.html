@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Article Viewer</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f9f9f9; padding: 20px; }
+    .article { background: #fff; border-radius: 10px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);}
+    .title { font-size: 20px; font-weight: bold; color: #333;}
+    .meta { font-size: 14px; color: #666;}
+    .content { margin-top: 10px; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <h1>📚 Articles</h1>
+  <div id="articles">Loading...</div>
+
+  <script>
+    async function loadArticles() {
+      let container = document.getElementById("articles");
+      container.innerHTML = "";
+      try {
+        // Get list of json files (requires server to allow directory listing OR provide a list.json)
+        let res = await fetch("data/list.json"); // <-- list.json contains ["a.json","b.json",...]
+        let files = await res.json();
+
+        for (let file of files) {
+          let articleData = await fetch("data/" + file).then(r => r.json());
+          let div = document.createElement("div");
+          div.className = "article";
+          div.innerHTML = `
+            <div class="title">${articleData.title}</div>
+            <div class="meta">👤 ${articleData.author} | 📘 ${articleData.course} | ✉️ ${articleData.email}</div>
+            <div class="content">${articleData.content}</div>
+          `;
+          container.appendChild(div);
+        }
+      } catch (e) {
+        container.innerHTML = "⚠️ Failed to load articles.";
+        console.error(e);
+      }
+    }
+    loadArticles();
+  </script>
+</body>
+</html>
