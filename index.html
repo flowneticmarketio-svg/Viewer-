@@ -19,13 +19,15 @@
     async function loadArticles() {
       let container = document.getElementById("articles");
       container.innerHTML = "";
-      try {
-        // Get list of json files (requires server to allow directory listing OR provide a list.json)
-        let res = await fetch("data/list.json"); // <-- list.json contains ["a.json","b.json",...]
-        let files = await res.json();
+      let articleNumber = 1;
+      let found = false;
 
-        for (let file of files) {
-          let articleData = await fetch("data/" + file).then(r => r.json());
+      while (true) {
+        try {
+          let response = await fetch(`data/${articleNumber}.json`);
+          if (!response.ok) break; // stop if file does not exist
+          let articleData = await response.json();
+
           let div = document.createElement("div");
           div.className = "article";
           div.innerHTML = `
@@ -34,12 +36,17 @@
             <div class="content">${articleData.content}</div>
           `;
           container.appendChild(div);
+
+          found = true;
+          articleNumber++;
+        } catch (err) {
+          break; // stop when file not found
         }
-      } catch (e) {
-        container.innerHTML = "⚠️ Failed to load articles.";
-        console.error(e);
       }
+
+      if (!found) container.innerHTML = "⚠️ No articles found.";
     }
+
     loadArticles();
   </script>
 </body>
